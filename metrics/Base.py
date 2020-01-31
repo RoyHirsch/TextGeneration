@@ -35,15 +35,21 @@ class AverageMeter(RunningAverage):
         return loss_value
 
 class Accuracy():
-    def __init__(self):
+    def __init__(self, ignore_index=None):
         self.correct = 0.0
         self.total = 0.0
+        self.ignore_index = ignore_index
 
     def update(self, outputs, labels):
         outputs = outputs.detach().cpu()
         labels = labels.detach().cpu()
 
         _, predicted = torch.max(outputs.data, 1)
+
+        if self.ignore_index != None:
+            labels = labels[(labels != self.ignore_index).nonzero()]
+            predicted = predicted[(labels != self.ignore_index).nonzero()]
+
         self.total += labels.size(0)
         self.correct += (predicted == labels).sum().item()
 

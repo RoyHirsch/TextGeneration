@@ -95,7 +95,7 @@ def mask_tokens(inputs, tokenizer, params):
 def train_one_epoch(epoch, model, train_loader, optimizer, tokenizer, params):
     device = params.device
     avg_loss = AverageMeter()
-    avg_acc = Accuracy()
+    avg_acc = Accuracy(ignore_index=-1)
 
     model.train()
     for i, batch in enumerate(train_loader):
