@@ -39,4 +39,4 @@ def sentences_to_batch(sentences, tokenizer, add_special_chars=True, add_pad=Tru
         return torch.stack(ids_sentences)
 
 def create_dummy_segment(sentence_tensor):
-    return torch.zeros_like(sentence_tensor).as_type(sentence_tensor).to(sentence_tensor.device)
+    return torch.zeros_like(sentence_tensor).to(sentence_tensor.device)

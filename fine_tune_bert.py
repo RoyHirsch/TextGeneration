@@ -60,7 +60,7 @@ class COCOCaptionsDataset(Dataset):
         return len(self.examples)
 
     def __getitem__(self, i):
-        return torch.tensor(self.examples[i])
+        return self.examples[i]
 
 def collate(examples):
     return pad_sequence(examples, batch_first=True, padding_value=0)
@@ -73,7 +73,7 @@ def mask_tokens(inputs, tokenizer, params):
     special_tokens_mask = [
         tokenizer.get_special_tokens_mask(val, already_has_special_tokens=True) for val in labels.tolist()
     ]
-    probability_matrix.masked_fill_(torch.tensor(special_tokens_mask).byte(), value=0.0)
+    probability_matrix.masked_fill_(torch.tensor(special_tokens_mask).bool(), value=0.0)
     if tokenizer._pad_token is not None:
         padding_mask = labels.eq(tokenizer.pad_token_id)
         probability_matrix.masked_fill_(padding_mask, value=0.0)

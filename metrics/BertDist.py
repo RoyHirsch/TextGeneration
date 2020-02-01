@@ -151,7 +151,8 @@ class BertDist(Metrics):
 
         tr_covmean = np.trace(covmean)
 
-        score = diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2.0 * tr_covmean        return score
+        score = diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2.0 * tr_covmean
+        return score
 
 
 if __name__ == '__main__':
@@ -160,28 +161,27 @@ if __name__ == '__main__':
     set_initial_random_seed(42)
 
     root = Path(__file__).parent.parent
-    f_name = (root / 'outputs' / 'mle.txt').as_posix()
-    mle_txt = read_text_file_to_list(f_name)
-    f_name = (root / 'data' / 'test_image_coco.txt').as_posix()
-    ref_txt = read_text_file_to_list(f_name)
-
-    device = 'gpu' if torch.cuda.is_available() else 'cpu'
+    test_files = ['mle.txt', 'leakgan.txt', 'maligan.txt',
+                  'rank.txt', 'seq.txt', 'textgan.txt']
 
     bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     model = BertModel.from_pretrained('bert-base-uncased')
-    sentences = ['i love you', 'where are you']
-    get_bert_sentence_embeddings(model, bert_tokenizer, sentences, method='mean')
 
-    dist = BertDist(test_text=mle_txt, ref_text=ref_txt, batch_size=10, device=device, method='mean')
-    score_mle = dist.get_score(model, 500)
+    scores = {}
+    for file in test_files:
+        name = file.split('.')[0]
+        f_name = (root / 'outputs' / file).as_posix()
+        mle_txt = read_text_file_to_list(f_name)
+        f_name = (root / 'data' / 'test_image_coco.txt').as_posix()
+        ref_txt = read_text_file_to_list(f_name)
 
-    f_name = (root / 'outputs' / 'leakgan.txt').as_posix()
-    leakgan_txt = read_text_file_to_list(f_name)
-    dist = BertDist(test_text=leakgan_txt, ref_text=ref_txt, batch_size=10, device=device, method='mean')
-    score_leakgan = dist.get_score(model, 500)
+        device = 'gpu' if torch.cuda.is_available() else 'cpu'
 
-    dist = BertDist(test_text=ref_txt, ref_text=ref_txt, batch_size=10, device=device, method='mean')
-    score_ref = dist.get_score(model, 500)
+        dist = BertDist(test_text=mle_txt, ref_text=ref_txt, batch_size=10, device=device, method='mean')
+        print('Start calc for ' + name)
+        score = dist.get_score(model, None)
+        scores[name] = score
+        print('{} score: {:.4f}'.format(name, score))
 
-    print('leakgan: {} mle: {} score_ref: {}'.format(score_leakgan, score_mle, score_ref))
+    print(scores)
     # leakgan: 14.166315642521123 mle: 11.602150307720777 score_ref: 3.45060815012635
